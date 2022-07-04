@@ -1,6 +1,15 @@
 const express = require('express');
-
+const mogoose = require('mongoose');
 const app = express();
+
+const DB = 'mongodb+srv://anuprajvarma:U7MO9Y7KUltWOHfP@cluster0.smxia.mongodb.net/mernstack?retryWrites=true&w=majority';
+
+
+mogoose.connect(DB).then(() => {
+    console.log('connection is succesfully')
+}).catch((err) => {
+    console.log(err)
+})
 
 app.get('/', (req, res) => {
     res.send('This is Home Page')
