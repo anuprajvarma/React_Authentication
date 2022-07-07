@@ -1,5 +1,7 @@
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const User = require('../model/userSchema')
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
@@ -21,18 +23,23 @@ router.post('/register', async (req, res) => {
         if (userExsit) {
             res.send("this email already exit");
         }
+        if (password == cpassword) {
+            const user = new User({
+                name,
+                email,
+                Phone,
+                work,
+                password,
+                cpassword,
+            })
+            //console.log(user);
 
-        const user = new User({
-            name,
-            email,
-            Phone,
-            work,
-            password,
-            cpassword,
-        })
-
-        await user.save();
-        res.send("user register succesfully")
+            await user.save();
+            res.send("user register succesfully")
+        }
+        else {
+            res.send("password and cpassword not match")
+        }
     } catch (err) {
         console.log(err);
     }
@@ -48,10 +55,25 @@ router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        const token = await user.generateAuthToken();
+
+        res.cookie('jwtoken', token, {
+            expires: new Date(Date.now() + 25892000000),
+            httpOnly: true
+        })
+
+        //console.log(token);
+
         if (user) {
-            res.send("user login succesfully");
+            if (isMatch) {
+                res.send("user login succesfully");
+            } else {
+                res.send("invailid credential error")
+            }
         } else {
-            res.send("user not exit")
+            res.send("email not exit")
         }
     } catch (err) {
         console.log(err);
